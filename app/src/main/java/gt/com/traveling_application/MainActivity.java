@@ -3,25 +3,37 @@ package gt.com.traveling_application;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import gt.com.traveling_application.adapter.ViewPagerAdapter;
+import android.widget.Toast;
+import com.yarolegovich.discretescrollview.DiscreteScrollView;
+import com.yarolegovich.discretescrollview.InfiniteScrollAdapter;
+import com.yarolegovich.discretescrollview.transform.ScaleTransformer;
+import gt.com.traveling_application.adapter.StoreItemsAdapter;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+    DiscreteScrollView.OnItemChangedListener, View.OnClickListener {
 
   private TextView mTextMessage;
   ViewPager viewPager;
   Context activity = MainActivity.this;
-  LinearLayout sliderDotspanel;
-  private int dotscount;
-  private ImageView[] dots;
+  StoreItems storeItems;
+  List<Item> data;
+  InfiniteScrollAdapter infiniteAdapter;
+  DiscreteScrollView itemPicker;
+  TextView currentItemName;
+  ImageView imageView;
+  StoreItemsAdapter storeItemsAdapter;
+
 
   private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
       = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -52,59 +64,24 @@ public class MainActivity extends AppCompatActivity {
     BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
     navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
+    storeItems = StoreItems.get();
+    currentItemName = findViewById(R.id.itemName);
+    itemPicker = findViewById(R.id.picker);
+    data = storeItems.getData();
+    imageView = findViewById(R.id.image);
+    storeItemsAdapter = new StoreItemsAdapter(data);
+    infiniteAdapter = InfiniteScrollAdapter.wrap(storeItemsAdapter);
+    itemPicker.setAdapter(infiniteAdapter);
+    itemPicker.setOffscreenItems(2);
+    itemPicker.setItemTransformer(new ScaleTransformer.Builder()
+        .setMinScale(0.8f)
+        .build());
 
-
-    viewPager = (ViewPager) findViewById(R.id.viewPager);
-
-    sliderDotspanel = (LinearLayout) findViewById(R.id.SliderDots);
-
-    ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this);
-
-    viewPager.setAdapter(viewPagerAdapter);
-
-    dotscount = viewPagerAdapter.getCount();
-    dots = new ImageView[dotscount];
-
-    for(int i = 0; i < dotscount; i++){
-
-      dots[i] = new ImageView(this);
-      dots[i].setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.nonactive_dot));
-
-      LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-
-      params.setMargins(8, 0, 8, 0);
-
-      sliderDotspanel.addView(dots[i], params);
-
-    }
-
-    dots[0].setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.active_dot));
-
-    viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-      @Override
-      public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-      }
-
-      @Override
-      public void onPageSelected(int position) {
-
-        for(int i = 0; i< dotscount; i++){
-          dots[i].setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.nonactive_dot));
-        }
-
-        dots[position].setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.active_dot));
-
-      }
-
-      @Override
-      public void onPageScrollStateChanged(int state) {
-
-      }
-    });
-
+    itemPicker.setSlideOnFling(true);
 
   }
+
+
 
 
 
@@ -126,6 +103,22 @@ public class MainActivity extends AppCompatActivity {
   }
 
 
+  @Override
+  public void onClick(View v) {
+
+  }
+
+  @Override
+  public void onCurrentItemChanged(@Nullable ViewHolder viewHolder, int adapterPosition) {
+    int positionInDataSet = infiniteAdapter.getRealPosition(adapterPosition);
+    Toast.makeText(this, String.valueOf(positionInDataSet), Toast.LENGTH_SHORT).show();
+
+  }
+
+  @Override
+  public void onPointerCaptureChanged(boolean hasCapture) {
+
+  }
 }
 
 
